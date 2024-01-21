@@ -2,10 +2,8 @@ int buttonPressed = 0;
 
 void setup()
 {
-    pinMode(2, INPUT);
-    pinMode(3, OUTPUT);
     pinMode(4, OUTPUT);
-    pinMode(5, OUTPUT);
+    pinMode(2, INPUT);
 
     digitalWrite(4, HIGH);
     delay(2000);

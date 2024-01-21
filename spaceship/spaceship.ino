@@ -1,37 +1,72 @@
-int switchState = 0;
+/*
+This program is for the spaceship project.
+It will control LEDs using a button.
+*/
+
+int buttonPressed = 0;
+const int buttonPin = 2;
+const int redPin1 = 3;
+const int redPin2 = 4;
+const int greenPin = 5;
 
 void setup()
 {
-    // green led
-    pinMode(3, OUTPUT);
-    // red led
-    pinMode(4, OUTPUT);
-    pinMode(5, OUTPUT);
-    // button
-    pinMode(2, INPUT);
+    // initialize the button and LEDs
+    pinMode(buttonPin, INPUT);
+    pinMode(redPin1, OUTPUT);
+    pinMode(redPin2, OUTPUT);
+    pinMode(greenPin, OUTPUT);
+
+    // fun starting LED pattern
+    for (int i = 0; i < 3; i++)
+    {
+        digitalWrite(redPin1, HIGH);
+        digitalWrite(redPin2, LOW);
+        digitalWrite(greenPin, LOW);
+        delay(250);
+        digitalWrite(redPin1, LOW);
+        digitalWrite(redPin2, HIGH);
+        delay(250);
+        digitalWrite(redPin2, LOW);
+        digitalWrite(greenPin, HIGH);
+        delay(250);
+    }
+    for (int i = 0; i < 2; i++)
+    {
+        digitalWrite(redPin1, HIGH);
+        digitalWrite(redPin2, HIGH);
+        digitalWrite(greenPin, HIGH);
+        delay(500);
+        digitalWrite(redPin1, LOW);
+        digitalWrite(redPin2, LOW);
+        digitalWrite(greenPin, LOW);
+        delay(500);
+    }
 }
 
 void loop()
 {
-    switchState = digitalRead(2);
+    buttonPressed = digitalRead(buttonPin);
 
-    if (switchState == LOW)
+    if (buttonPressed == LOW)
     {
         // the button is not pressed
-        digitalWrite(3, HIGH);
-        digitalWrite(4, LOW);
-        digitalWrite(5, LOW);
+        digitalWrite(redPin1, LOW);
+        digitalWrite(redPin2, LOW);
+        digitalWrite(greenPin, HIGH);
     }
     else
     {
         // the button is pressed
-        digitalWrite(3, LOW);
-        digitalWrite(4, LOW);
-        digitalWrite(5, HIGH);
+        digitalWrite(redPin1, HIGH);
+        digitalWrite(redPin2, LOW);
+        digitalWrite(greenPin, LOW);
 
-        delay(250);
-        digitalWrite(4, HIGH);
-        digitalWrite(5, LOW);
-        delay(250);
+        delay(25);
+
+        digitalWrite(redPin1, LOW);
+        digitalWrite(redPin2, HIGH);
+
+        delay(25);
     }
 }

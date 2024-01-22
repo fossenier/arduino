@@ -62,11 +62,11 @@ void loop()
         digitalWrite(redPin2, LOW);
         digitalWrite(greenPin, LOW);
 
-        delay(25);
+        delay(250);
 
         digitalWrite(redPin1, LOW);
         digitalWrite(redPin2, HIGH);
 
-        delay(25);
+        delay(250);
     }
 }

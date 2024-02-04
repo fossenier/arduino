@@ -4,7 +4,7 @@ Takes in values from a phototransistor and plays a frequency to a piezo based on
 
 // delay tracking
 unsigned long previousMillis = 0;
-const unsigned long interval = 250;
+const unsigned long interval = 100;
 
 // input output
 const int photoPin = A0;

@@ -1,5 +1,3 @@
-#include <utility>
-
 /*
 My implementation of Mancala.
 This first version simply plays the game via Serial Monitor.
@@ -19,6 +17,12 @@ constexpr int playerCount{2};
 class MancalaBoard
 {
 private:
+    struct MoveResult
+    {
+        int lastPit;
+        int lastSide;
+    };
+
     /*
     The board is represented as a 2x6 array
     Be aware! Each side of the board is updated such that index 0 is to that player's
@@ -92,7 +96,7 @@ private:
      *
      * @return `std::pair<int, int>` The last pit and side of the board a stone was placed.
      */
-    std::pair<int, int> moveStones(int pit)
+    MoveResult moveStones(int pit)
     {
         // pick up stones from the pit
         int stones{playerPits[activePlayer][pit]};
@@ -122,7 +126,7 @@ private:
                 {
                     justLandedInStore = true;
                     // the last stone was placed on the other side of the board before the store
-                    return std::make_pair(boardWidth - 1, 1 - activeSide);
+                    return {boardWidth - 1, 1 - activeSide};
                 }
             }
 
@@ -131,7 +135,7 @@ private:
             stones--;
         }
         justLandedInStore = false;
-        return std::make_pair(pit, activeSide);
+        return {pit, activeSide};
     }
 
     /**
@@ -159,6 +163,9 @@ public:
     /**
      * @brief Retrieves the player's store.
      *
+     * @note Pit 0 for both players is to their left-hand side and pit 5 is to their right-hand side.
+     * Assuming each player is facing the board sitting across from each other.
+     *
      * @return The player's store as a constant reference to `playerPits`.
      */
     auto getGameState() -> const decltype(playerPits) &
@@ -185,7 +192,7 @@ public:
     }
 
     /**
-     * @brief Moves a selected pit from the active player's side.
+     * @brief Performs a player's move action.
      *
      * @note
      * I) Moves stones
@@ -196,11 +203,11 @@ public:
      */
     void makeMove(int pit)
     {
-        std::pair<int, int> lastPitSide = moveStones(pit);
+        MoveResult lastPitSide{moveStones(pit)};
 
         if (!justLandedInStore) // the player can't steal if they just landed in their store
         {
-            makeSteal(lastPitSide.first, lastPitSide.second);
+            makeSteal(lastPitSide.lastPit, lastPitSide.lastSide);
         }
 
         if (!justStole) // the player gets another turn if they just stole

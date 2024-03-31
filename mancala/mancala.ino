@@ -17,6 +17,9 @@ constexpr int playerCount{2};
 class MancalaBoard
 {
 private:
+    /**
+     * @brief The result of a move. The last pit and side of the board a stone was placed.
+     */
     struct MoveResult
     {
         int lastPit;
@@ -26,7 +29,7 @@ private:
     /*
     The board is represented as a 2x6 array
     Be aware! Each side of the board is updated such that index 0 is to that player's
-    imaginary left hand side and index 5 is to that player's imaginary right hand side.
+    imaginary left hand side and the last index is to that player's imaginary right hand side.
      */
     int playerPits[playerCount][boardWidth]{
         {4, 4, 4, 4, 4, 4},
@@ -146,19 +149,38 @@ private:
         if (activePlayer == 0)
         {
             activePlayer = 1;
-            player = 2;
         }
         else
         {
             activePlayer = 0;
-            player = 1;
         }
     }
 
 public:
-    int player = 1;                // player 1 or 2 (this is to display to users, not to change the game state)
     bool justStole{false};         // if the player just stole from the other player
     bool justLandedInStore{false}; // if the player just landed in their store
+
+    /**
+     * @brief Retrieves the active player. 0 for player 1 and 1 for player 2.
+     *
+     * @return The active player as a constant int.
+     */
+    const int getPlayer()
+    {
+        return activePlayer;
+    }
+
+    /**
+     * @brief Retrieves the player's store.
+     *
+     * @param player The player whose store to retrieve (0 or 1).
+     *
+     * @return The player's store as a constant int.
+     */
+    const int getGameScore(int player)
+    {
+        return playerStore[player];
+    }
 
     /**
      * @brief Retrieves the player's store.
@@ -210,17 +232,78 @@ public:
             makeSteal(lastPitSide.lastPit, lastPitSide.lastSide);
         }
 
-        if (!justStole) // the player gets another turn if they just stole
+        if (!justLandedInStore) // the player gets another turn if they landed in their store
         {
             switchActivePlayer();
         }
     }
 };
 
+MancalaBoard game; // the board state
+
 void setup()
 {
+    Serial.begin(9600); // start serial communication at 9600 baud rate
+    while (!Serial)
+    {
+        ; // wait for the serial port to connect. needed for native USB port only
+    }
+    Serial.println("Welcome to Mancala.");
 }
 
 void loop()
 {
+    if (Serial.available() > 0)
+    {
+        // read the incoming byte:
+        String input = Serial.readStringUntil('\n');
+        input.trim(); // trim any whitespace
+
+        if (input == "state")
+        {
+            // if the player requezsts the game state, print the board
+            const auto &state = game.getGameState();
+            // opponent's side (reversed for display purposes)
+            const int opponent{1 - game.getPlayer()};
+            Serial.print(game.getGameScore(opponent));
+            Serial.println();
+            Serial.print("Opponent (P" + String(opponent + 1) + "): ");
+            for (int pit{boardWidth - 1}; pit >= 0; --pit)
+            {
+                Serial.print(state[opponent][pit]);
+                Serial.print(" ");
+            }
+            Serial.println();
+            // player's side
+            const int player{game.getPlayer()};
+            Serial.print("You (P" + String(player + 1) + "):      ");
+            for (int pit{0}; pit < boardWidth; ++pit)
+            {
+                Serial.print(state[player][pit]);
+                Serial.print(" ");
+            }
+            Serial.println();
+            Serial.print(game.getGameScore(player));
+        }
+        else
+        {
+            // assuming the input is a number representing the pit to move
+            int pit{input.toInt() - 1}; // make the pit 0-indexed
+            if (pit >= 0 && pit < boardWidth)
+            {
+                Serial.print("Player ");
+                Serial.print(game.getPlayer() + 1);
+                Serial.println(" made a move.");
+                game.makeMove(pit);
+                if (game.isGameOver())
+                {
+                    Serial.println("Game over.");
+                }
+            }
+            else
+            {
+                Serial.println("Invalid pit. Please enter a number between 1 and 6.");
+            }
+        }
+    }
 }

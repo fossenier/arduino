@@ -1,15 +1,27 @@
-#include "mancalaBoard.cpp"
 #include <LiquidCrystal.h>
+
+#include "mancalaBoard.cpp"
+#include "mancalaScreen.h"
 
 /*
 My implementation of Mancala.
 This second version is implemented fully using Arduino's LCD screen.
 */
 
-MancalaBoard game; // the board state
+#include <LiquidCrystal.h>
+#include "mancalaBoard.cpp"
+#include "mancalaScreen.h"
+
+using namespace screen;
+
+MancalaBoard board;
+LiquidCrystal lcd(rsPin, enPin, db4Pin, db5Pin, db6Pin, db7Pin);
 
 void setup()
 {
+    lcd.begin(screenWidth, screenHeight);
+    centerPrint(lcd, "Welcome to", 0);
+    centerPrint(lcd, "Mancala.", 1);
 }
 
 void loop()
@@ -36,11 +48,11 @@ void loopSerialVersion()
 
         if (input == "state")
         {
-            // if the player requezsts the game state, print the board
-            const auto &state = game.getGameState();
+            // if the player requezsts the board state, print the board
+            const auto &state = board.getGameState();
             // opponent's side (reversed for display purposes)
-            const int opponent{1 - game.getPlayer()};
-            Serial.print(game.getGameScore(opponent));
+            const int opponent{1 - board.getPlayer()};
+            Serial.print(board.getGameScore(opponent));
             Serial.println();
             Serial.print("Opponent (P" + String(opponent + 1) + "): ");
             for (int pit{boardWidth - 1}; pit >= 0; --pit)
@@ -50,7 +62,7 @@ void loopSerialVersion()
             }
             Serial.println();
             // player's side
-            const int player{game.getPlayer()};
+            const int player{board.getPlayer()};
             Serial.print("You (P" + String(player + 1) + "):      ");
             for (int pit{0}; pit < boardWidth; ++pit)
             {
@@ -58,7 +70,7 @@ void loopSerialVersion()
                 Serial.print(" ");
             }
             Serial.println();
-            Serial.print(game.getGameScore(player));
+            Serial.print(board.getGameScore(player));
         }
         else
         {
@@ -67,10 +79,10 @@ void loopSerialVersion()
             if (pit >= 0 && pit < boardWidth)
             {
                 Serial.print("Player ");
-                Serial.print(game.getPlayer() + 1);
+                Serial.print(board.getPlayer() + 1);
                 Serial.println(" made a move.");
-                game.makeMove(pit);
-                if (game.isGameOver())
+                board.makeMove(pit);
+                if (board.isGameOver())
                 {
                     Serial.println("Game over.");
                 }

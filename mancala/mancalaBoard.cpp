@@ -1,5 +1,6 @@
-constexpr int boardWidth{6};
-constexpr int playerCount{2};
+#include "mancalaBoard.h"
+
+using namespace board;
 
 /**
  * @brief The Mancala board.

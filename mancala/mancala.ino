@@ -1,15 +1,11 @@
-#include <LiquidCrystal.h>
-
-#include "mancalaBoard.cpp"
-#include "mancalaScreen.h"
-
 /*
 My implementation of Mancala.
 This second version is implemented fully using Arduino's LCD screen.
 */
 
 #include <LiquidCrystal.h>
-#include "mancalaBoard.cpp"
+
+#include "mancalaBoard.h"
 #include "mancalaScreen.h"
 
 using namespace screen;

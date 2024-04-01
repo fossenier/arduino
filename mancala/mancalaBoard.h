@@ -9,13 +9,20 @@ namespace board
 
 using namespace board;
 
+/**
+ * @brief The Mancala board.
+ *
+ * @note Instructions.
+ * I) Call `makeMove` to move a pit.
+ * II) Call `isGameOver` to check if the game is over.
+ */
 class MancalaBoard
 {
 private:
     struct MoveResult
     {
-        int lastPit;
-        int lastSide;
+        int lastPit{};
+        int lastSide{};
     };
 
     int playerPits[playerCount][boardWidth];

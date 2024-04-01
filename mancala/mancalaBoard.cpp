@@ -181,7 +181,7 @@ MancalaBoard::MoveResult MancalaBoard::moveStones(int pit)
             {
                 justLandedInStore = true;
                 // the last stone was placed on the other side of the board before the store
-                return {boardWidth - 1, 1 - activeSide};
+                return MancalaBoard::MoveResult{0, 1 - activeSide};
             }
         }
 
@@ -190,7 +190,7 @@ MancalaBoard::MoveResult MancalaBoard::moveStones(int pit)
         stones--;
     }
     justLandedInStore = false;
-    return {pit, activeSide};
+    return MancalaBoard::MoveResult{pit, activeSide};
 }
 
 /**

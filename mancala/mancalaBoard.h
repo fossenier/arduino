@@ -23,6 +23,8 @@ private:
     {
         int lastPit{};
         int lastSide{};
+
+        MoveResult(int pit, int side) : lastPit(pit), lastSide(side) {}
     };
 
     int playerPits[playerCount][boardWidth];

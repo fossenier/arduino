@@ -50,6 +50,7 @@ void loop()
             Serial.print("Opponent (P" + String(opponent + 1) + "): ");
             // char pitNumbers[boardWidth + 1]; // char array to store pit numbers
             // int index = 0;                   // index to keep track of the position in the char array
+            displayGameState(state, game.getPlayer());
 
             for (int pit{boardWidth - 1}; pit >= 0; --pit)
             {
@@ -59,7 +60,6 @@ void loop()
             }
             // pitNumbers[index] = '\0'; // add null terminator at the end of the char array
             // centerPrint(lcd, pitNumbers, 0);
-            displayGameState(state, opponent, false);
             Serial.println();
             // player's side
             const int player{game.getPlayer()};
@@ -69,6 +69,8 @@ void loop()
                 Serial.print(state[player][pit]);
                 Serial.print(" ");
             }
+            lcd.setCursor(0, 1);
+            lcd.print(game.getGameScore(player));
             Serial.println();
             Serial.print(game.getGameScore(player));
         }
@@ -95,34 +97,43 @@ void loop()
     }
 }
 
-void displayGameState(const PlayerPitsType &state, int side, bool isAscending)
+void displayGameState(const PlayerPitsType &state, int currentPlayer)
 {
-    // determine the start and end points based on the direction
-    int start = isAscending ? 0 : boardWidth - 1;
-    int end = isAscending ? boardWidth : -1; // note how 'end' is set for descending loops
-    int step = isAscending ? 1 : -1;         // step forward for ascending, backward for descending
-
-    char pitNumbers[boardWidth * 2 + 1]; // assuming two characters per pit max
-    int index = 0;                       // index for filling pitNumbers
-
-    // iterate through pits in the specified direction
-    for (int pit{start}; isAscending ? pit < end : pit > end; pit += step)
+    // Loop for player and opponent
+    for (int side = 0; side <= 1; ++side)
     {
-        const int pitNumber{state[side][isAscending ? pit : boardWidth - 1 - pit]}; // adjust index based on direction
-        if (pitNumber < 10)
-        {
-            pitNumbers[index++] = ' ';
-            pitNumbers[index++] = '0' + pitNumber;
-        }
-        else
-        {
-            pitNumbers[index++] = '0' + pitNumber / 10;
-            pitNumbers[index++] = '0' + pitNumber % 10;
-        }
-    }
+        bool isCurrentPlayer = (side == currentPlayer);
 
-    pitNumbers[index] = '\0'; // null-terminate the string
-    centerPrint(lcd, pitNumbers, side, 1);
+        // Determine the display direction: always ascending in the array
+        // but mirrored for the opponent when accessing the game state
+        bool isAscending = true; // We'll keep the array filling ascending for alignment
+
+        char pitNumbers[boardWidth * 2 + 1];
+        int index = 0;
+
+        for (int pit = 0; pit < boardWidth; pit++)
+        {
+            // Adjust pit index for opponent to mirror the display
+            int adjustedPit = isCurrentPlayer ? pit : (boardWidth - 1 - pit);
+            const int pitNumber = state[side][adjustedPit];
+
+            if (pitNumber < 10)
+            {
+                pitNumbers[index++] = ' ';
+                pitNumbers[index++] = '0' + pitNumber;
+            }
+            else
+            {
+                pitNumbers[index++] = '0' + pitNumber / 10;
+                pitNumbers[index++] = '0' + pitNumber % 10;
+            }
+        }
+
+        pitNumbers[index] = '\0'; // Null-terminate the string
+
+        // Display the pit numbers with proper alignment
+        centerPrint(lcd, pitNumbers, isCurrentPlayer ? 1 : 0, 1);
+    }
 }
 
 void setupSerialVersion()

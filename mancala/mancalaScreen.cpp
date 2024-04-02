@@ -4,9 +4,10 @@
 
 using namespace screen;
 
-void centerPrint(LiquidCrystal &display, const char *message, int row)
+void centerPrint(LiquidCrystal &display, const char *message, int row, int offset = 0)
 {
-    display.setCursor((screenWidth - stringLength(message)) / 2, row);
+    int centerOffset = (screenWidth - stringLength(message)) / 2;
+    display.setCursor(centerOffset + offset, row);
     display.print(message);
 }
 

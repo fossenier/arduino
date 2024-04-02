@@ -14,9 +14,11 @@ namespace screen
     constexpr int db4Pin{5};
     constexpr int enPin{11};
     constexpr int rsPin{12};
+
+    constexpr char blank{' '};
 }
 
-void centerPrint(LiquidCrystal &display, const char *message, int row);
+void centerPrint(LiquidCrystal &display, const char *message, int row, int offset = 0);
 int stringLength(const char *str);
 
 #endif

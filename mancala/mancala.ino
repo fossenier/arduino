@@ -8,6 +8,7 @@ This second version is implemented fully using Arduino's LCD screen.
 #include "mancalaBoard.h"
 #include "mancalaScreen.h"
 
+using namespace board;
 using namespace screen;
 
 MancalaBoard game;
@@ -39,7 +40,7 @@ void loop()
         if (input == "state")
         {
             // if the player requezsts the game state, print the game
-            const auto &state = game.getGameState();
+            const PlayerPitsType &state = game.getGameState();
             // opponent's side (reversed for display purposes)
             const int opponent{1 - game.getPlayer()};
             Serial.print(game.getGameScore(opponent));
@@ -47,17 +48,18 @@ void loop()
             lcd.print(game.getGameScore(opponent));
             Serial.println();
             Serial.print("Opponent (P" + String(opponent + 1) + "): ");
-            char pitNumbers[boardWidth + 1]; // char array to store pit numbers
-            int index = 0;                   // index to keep track of the position in the char array
+            // char pitNumbers[boardWidth + 1]; // char array to store pit numbers
+            // int index = 0;                   // index to keep track of the position in the char array
 
             for (int pit{boardWidth - 1}; pit >= 0; --pit)
             {
                 Serial.print(state[opponent][pit]);
                 Serial.print(" ");
-                pitNumbers[index++] = state[opponent][pit] + '0'; // convert pit number to char and store in the array                // add a space after each pit number
+                // pitNumbers[index++] = state[opponent][pit] + '0'; // convert pit number to char and store in the array                // add a space after each pit number
             }
-            pitNumbers[index] = '\0'; // add null terminator at the end of the char array
-            centerPrint(lcd, pitNumbers, 0);
+            // pitNumbers[index] = '\0'; // add null terminator at the end of the char array
+            // centerPrint(lcd, pitNumbers, 0);
+            displayGameState(state, opponent, false);
             Serial.println();
             // player's side
             const int player{game.getPlayer()};
@@ -93,6 +95,36 @@ void loop()
     }
 }
 
+void displayGameState(const PlayerPitsType &state, int side, bool isAscending)
+{
+    // determine the start and end points based on the direction
+    int start = isAscending ? 0 : boardWidth - 1;
+    int end = isAscending ? boardWidth : -1; // note how 'end' is set for descending loops
+    int step = isAscending ? 1 : -1;         // step forward for ascending, backward for descending
+
+    char pitNumbers[boardWidth * 2 + 1]; // assuming two characters per pit max
+    int index = 0;                       // index for filling pitNumbers
+
+    // iterate through pits in the specified direction
+    for (int pit{start}; isAscending ? pit < end : pit > end; pit += step)
+    {
+        const int pitNumber{state[side][isAscending ? pit : boardWidth - 1 - pit]}; // adjust index based on direction
+        if (pitNumber < 10)
+        {
+            pitNumbers[index++] = ' ';
+            pitNumbers[index++] = '0' + pitNumber;
+        }
+        else
+        {
+            pitNumbers[index++] = '0' + pitNumber / 10;
+            pitNumbers[index++] = '0' + pitNumber % 10;
+        }
+    }
+
+    pitNumbers[index] = '\0'; // null-terminate the string
+    centerPrint(lcd, pitNumbers, side, 1);
+}
+
 void setupSerialVersion()
 {
     Serial.begin(9600); // start serial communication at 9600 baud rate
@@ -114,7 +146,7 @@ void loopSerialVersion()
         if (input == "state")
         {
             // if the player requezsts the game state, print the game
-            const auto &state = game.getGameState();
+            const PlayerPitsType &state = game.getGameState();
             // opponent's side (reversed for display purposes)
             const int opponent{1 - game.getPlayer()};
             Serial.print(game.getGameScore(opponent));

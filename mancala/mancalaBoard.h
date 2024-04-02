@@ -5,6 +5,8 @@ namespace board
 {
     constexpr int boardWidth{6};
     constexpr int playerCount{2};
+
+    using PlayerPitsType = int[playerCount][boardWidth];
 }
 
 using namespace board;

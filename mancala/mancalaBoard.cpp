@@ -11,6 +11,22 @@ MancalaBoard::MancalaBoard()
 {
 }
 
+Pair MancalaBoard::endGame()
+{
+    int player0Score{playerStore[0]};
+    int player1Score{playerStore[1]};
+
+    for (int i{0}; i < boardWidth; i++)
+    {
+        player0Score += playerPits[0][i];
+        playerPits[0][i] = 0;
+        player1Score += playerPits[1][i];
+        playerPits[1][i] = 0;
+    }
+
+    return Pair{player0Score, player1Score};
+}
+
 /**
  * @brief Retrieves the active player. 0 for player 1 and 1 for player 2.
  *
@@ -53,15 +69,11 @@ auto MancalaBoard::getGameState() -> const decltype(playerPits) &
  */
 int MancalaBoard::isGameOver()
 {
-    for (int i{0}; i < playerCount; i++)
+    if (isPlayerEmpty(0) || isPlayerEmpty(1))
     {
-        if (!isPlayerEmpty(i))
-        {
-            return false;
-        }
+        return true;
     }
-
-    return true;
+    return false;
 }
 
 /**
@@ -72,15 +84,16 @@ int MancalaBoard::isGameOver()
  */
 bool MancalaBoard::isPlayerEmpty(int player)
 {
+    bool allEmpty{true};
     for (int i{0}; i < boardWidth; i++)
     {
         if (playerPits[player][i] != 0)
         {
-            return false;
+            allEmpty = false;
         }
     }
 
-    return true;
+    return allEmpty;
 }
 
 /**

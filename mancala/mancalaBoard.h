@@ -6,6 +6,14 @@ namespace board
     constexpr int boardWidth{6};
     constexpr int playerCount{2};
 
+    struct Pair
+    {
+        int first{};
+        int second{};
+
+        Pair(int f, int s) : first(f), second(s) {}
+    };
+
     using PlayerPitsType = int[playerCount][boardWidth];
 }
 
@@ -47,6 +55,7 @@ public:
     auto getGameState() -> const decltype(playerPits) &;
     int isGameOver();
     void makeMove(int pit);
+    Pair endGame();
 };
 
 #endif

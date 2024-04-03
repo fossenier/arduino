@@ -40,29 +40,17 @@ void setup()
 
 void loop()
 {
-    // update the game state
+    // display the game state
     displayGameScore(game.getGameScore(0), game.getGameScore(1), game.getPlayer());
     displayGameState(game.getGameState(), game.getPlayer());
 
-    while (Serial.available() < 1)
-        ; // wait for input
+    // handle the player's move
+    handlePlayerMove();
 
-    char input = Serial.read();
-    if (input >= '1' && input <= '6')
-        game.makeMove(input - '0' - 1);
-    else
+    // handle win condition
+    if (game.isGameOver())
     {
-        // clear searial
-        while (Serial.available() > 0)
-            Serial.read();
-        Serial.print(inputErrorTop);
-        Serial.print(blank);
-        Serial.println(inputErrorBottom);
-
-        // clear lcd
-        lcd.clear();
-        centerPrint(lcd, inputErrorTop, 0);
-        centerPrint(lcd, inputErrorBottom, 1);
+        handleGameEnd();
     }
 }
 
@@ -87,6 +75,8 @@ void displayGameScore(const int score0, const int score1, int activePlayer)
 
         // display on the bottom (0) if it's the active player's side, otherwise display on the top (1)
         const int row = (i == activePlayer) ? 1 : 0;
+        lcd.setCursor(0, row);
+        lcd.print(displayScore);
     }
 }
 
@@ -124,4 +114,91 @@ void displayGameState(const PlayerPitsType &state, int activePlayer)
         // display on the bottom (0) if it's the active player's side, otherwise display on the top (1)
         centerPrint(lcd, pitNumbers, isActivePlayer ? 1 : 0, boardOffset);
     }
+}
+
+void handleGameEnd()
+{
+    Pair matchStandings = game.endGame();
+    char winner = matchStandings.first > matchStandings.second ? '1' : '2';
+
+    lcd.clear();
+    centerPrint(lcd, gameOverMessage, 0); // tell user the game is over
+
+    delay(2000); // wait for 2 seconds
+
+    char standingsMessageTop[screenWidth + 1];
+    char standingsMessageBottom[screenWidth + 1];
+    sprintf(standingsMessageTop, "Player %c wins!", winner);
+    sprintf(standingsMessageBottom, "Score: %d-%d", matchStandings.first, matchStandings.second);
+
+    if (matchStandings.first == matchStandings.second)
+    {
+        sprintf(standingsMessageTop, standingsMessageTie);
+    }
+
+    unsigned long lastUpdateTime = millis();
+    const long updateInterval = 4000;
+    bool showingStandings = true;
+
+    while (true)
+    {
+        if (Serial.available() > 0)
+        {
+            while (Serial.available() > 0)
+            {
+                Serial.read(); // clear the Serial buffer
+            }
+            game = MancalaBoard(); // reset the game
+            lcd.clear();           // reset the LCD
+            break;                 // exit the current loop iteration
+        }
+
+        unsigned long currentMillis = millis();
+
+        // check if it's time to update the display
+        if (currentMillis - lastUpdateTime >= updateInterval)
+        {
+            lcd.clear();
+            if (showingStandings)
+            {
+                centerPrint(lcd, standingsMessageTop, 0);
+                centerPrint(lcd, standingsMessageBottom, 1);
+            }
+            else
+            {
+                centerPrint(lcd, welcomeMessageTop, 0);
+                centerPrint(lcd, welcomeMessageBottom, 1);
+            }
+            showingStandings = !showingStandings; // toggle the state
+            lastUpdateTime = currentMillis;       // reset the timer
+        }
+    }
+}
+
+void handlePlayerMove()
+{
+    while (Serial.available() < 1)
+        ; // wait for input
+
+    char input = Serial.read();
+    while (input < '1' || input > '6')
+    {
+        // clear serial
+        while (Serial.available() > 0)
+            Serial.read();
+        Serial.print(inputErrorTop);
+        Serial.print(blank);
+        Serial.println(inputErrorBottom);
+
+        // clear lcd
+        lcd.clear();
+        centerPrint(lcd, inputErrorTop, 0);
+        centerPrint(lcd, inputErrorBottom, 1);
+
+        while (Serial.available() < 1)
+            ; // wait for input
+        input = Serial.read();
+    }
+    lcd.clear();
+    game.makeMove(input - '0' - 1);
 }

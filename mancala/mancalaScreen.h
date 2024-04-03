@@ -16,6 +16,12 @@ namespace screen
     constexpr int rsPin{12};
 
     constexpr char blank{' '};
+    constexpr char welcomeMessageTop[] = "Send any key";
+    constexpr char welcomeMessageBottom[] = "to begin Mancala";
+    constexpr char inputErrorTop[] = "Invalid input,";
+    constexpr char inputErrorBottom[] = "please enter 1-6.";
+
+    constexpr int boardOffset{1};
 }
 
 void centerPrint(LiquidCrystal &display, const char *message, int row, int offset = 0);

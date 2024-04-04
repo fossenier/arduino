@@ -54,7 +54,7 @@ public:
     const int getGameScore(int player);
     auto getGameState() -> const decltype(playerPits) &;
     int isGameOver();
-    void makeMove(int pit);
+    bool makeMove(int pit);
     Pair endGame();
 };
 

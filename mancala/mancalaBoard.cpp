@@ -106,8 +106,12 @@ bool MancalaBoard::isPlayerEmpty(int player)
  *
  * @param pit The pit (0-5) to move.
  */
-void MancalaBoard::makeMove(int pit)
+bool MancalaBoard::makeMove(int pit)
 {
+    if (playerPits[activePlayer][pit] == 0)
+    {
+        return false;
+    }
     MoveResult lastPitSide{moveStones(pit)};
 
     if (!justLandedInStore) // the player can't steal if they just landed in their store
@@ -119,6 +123,7 @@ void MancalaBoard::makeMove(int pit)
     {
         switchActivePlayer();
     }
+    return true;
 }
 
 /**

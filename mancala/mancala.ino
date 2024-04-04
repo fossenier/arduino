@@ -52,6 +52,22 @@ void loop()
     {
         handleGameEnd();
     }
+
+    // steal or land in store message
+    if (game.justStole)
+    {
+        lcd.clear();
+        centerPrint(lcd, "Steal!", 0);
+        delay(1000);
+        lcd.clear();
+    }
+    else if (game.justLandedInStore)
+    {
+        lcd.clear();
+        centerPrint(lcd, "Move again!", 0);
+        delay(1000);
+        lcd.clear();
+    }
 }
 
 void displayGameScore(const int score0, const int score1, int activePlayer)
@@ -199,6 +215,28 @@ void handlePlayerMove()
             ; // wait for input
         input = Serial.read();
     }
+
+    // the user picked an empty pit
+    if (!game.makeMove(input - '0' - 1))
+    {
+        Serial.print(inputErrorTop);
+        Serial.print(blank);
+        Serial.println(pitErrorBottom);
+
+        lcd.clear();
+        centerPrint(lcd, inputErrorTop, 0);
+        centerPrint(lcd, pitErrorBottom, 1);
+
+        delay(2000);
+
+        lcd.clear();
+
+        // display the board for another choice
+        displayGameScore(game.getGameScore(0), game.getGameScore(1), game.getPlayer());
+        displayGameState(game.getGameState(), game.getPlayer());
+        // cause another move
+        handlePlayerMove();
+    }
+
     lcd.clear();
-    game.makeMove(input - '0' - 1);
 }

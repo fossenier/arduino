@@ -22,6 +22,7 @@ namespace screen
     constexpr char inputErrorBottom[]{"please enter 1-6."};
     constexpr char gameOverMessage[]{"Game over!"};
     constexpr char standingsMessageTie[]{"It's a tie!"};
+    constexpr char pitErrorBottom[]{"can't be empty."};
 
     constexpr int boardOffset{1};
 }

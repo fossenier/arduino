@@ -3,27 +3,36 @@
 using namespace board;
 
 MancalaBoard::MancalaBoard()
-    : playerPits{{4, 4, 4, 4, 4, 4}, {4, 4, 4, 4, 4, 4}}, // initialize all pits to have 4 stones
-      playerStore{0, 0},                                  // initialize both player stores to 0
-      activePlayer(0),                                    // start the game with player 0
-      justStole(false),                                   // no stones have been stolen at the start of the game
-      justLandedInStore(false)                            // no player has landed in their store at the start
+    : m_playerPits{{4, 4, 4, 4, 4, 4}, {4, 4, 4, 4, 4, 4}}, // initialize all pits to have 4 stones
+      m_playerStores{0, 0},                                 // initialize both player stores to 0
+      m_activePlayer(0),                                    // start the game with player 0
+      justStole(false),                                     // no stones have been stolen at the start of the game
+      justLandedInStore(false)                              // no player has landed in their store at the start
 {
 }
 
+/**
+ * @brief Ends the game and calculates the final scores.
+ *
+ * @return `Pair` The final scores for player 1 and player 2.
+
+*/
 Pair MancalaBoard::endGame()
 {
-    int player0Score{playerStore[0]};
-    int player1Score{playerStore[1]};
+    // fetch store scores
+    int player0Score{m_playerStores[0]};
+    int player1Score{m_playerStores[1]};
 
+    // empty out board into stores
     for (int i{0}; i < boardWidth; i++)
     {
-        player0Score += playerPits[0][i];
-        playerPits[0][i] = 0;
-        player1Score += playerPits[1][i];
-        playerPits[1][i] = 0;
+        player0Score += m_playerPits[0][i];
+        m_playerPits[0][i] = 0;
+        player1Score += m_playerPits[1][i];
+        m_playerPits[1][i] = 0;
     }
 
+    // return the final scores
     return Pair{player0Score, player1Score};
 }
 
@@ -32,9 +41,9 @@ Pair MancalaBoard::endGame()
  *
  * @return The active player as a constant int.
  */
-const int MancalaBoard::getPlayer()
+const int MancalaBoard::getPlayer() const
 {
-    return activePlayer;
+    return m_activePlayer;
 }
 
 /**
@@ -44,9 +53,9 @@ const int MancalaBoard::getPlayer()
  *
  * @return The player's store as a constant int.
  */
-const int MancalaBoard::getGameScore(int player)
+const int MancalaBoard::getGameScore(int player) const
 {
-    return playerStore[player];
+    return m_playerStores[player];
 }
 
 /**
@@ -57,9 +66,9 @@ const int MancalaBoard::getGameScore(int player)
  *
  * @return The player's store as a constant reference to `playerPits`.
  */
-auto MancalaBoard::getGameState() -> const decltype(playerPits) &
+const PlayerPitsType &MancalaBoard::getGameState() const
 {
-    return playerPits;
+    return m_playerPits;
 }
 
 /**
@@ -67,12 +76,14 @@ auto MancalaBoard::getGameState() -> const decltype(playerPits) &
  *
  * @return `true` for a game over state, `false` otherwise.
  */
-int MancalaBoard::isGameOver()
+bool MancalaBoard::isGameOver()
 {
+    // if either player's side is empty, the game is over
     if (isPlayerEmpty(0) || isPlayerEmpty(1))
     {
         return true;
     }
+    // the game is not over
     return false;
 }
 
@@ -85,9 +96,10 @@ int MancalaBoard::isGameOver()
 bool MancalaBoard::isPlayerEmpty(int player)
 {
     bool allEmpty{true};
+    // check if all pits on the player's side are empty
     for (int i{0}; i < boardWidth; i++)
     {
-        if (playerPits[player][i] != 0)
+        if (m_playerPits[player][i] != 0)
         {
             allEmpty = false;
         }
@@ -105,18 +117,21 @@ bool MancalaBoard::isPlayerEmpty(int player)
  * III) Determines the next player
  *
  * @param pit The pit (0-5) to move.
+ *
+ * @return `true` if the move was successful, `false` otherwise.
  */
 bool MancalaBoard::makeMove(int pit)
 {
-    if (playerPits[activePlayer][pit] == 0)
+    // check if the player can move from the selected pit
+    if (m_playerPits[m_activePlayer][pit] == 0)
     {
         return false;
     }
-    MoveResult lastPitSide{moveStones(pit)};
+    Pair lastPitSide{moveStones(pit)};
 
     if (!justLandedInStore) // the player can't steal if they just landed in their store
     {
-        makeSteal(lastPitSide.lastPit, lastPitSide.lastSide);
+        makeSteal(lastPitSide.first, lastPitSide.second);
     }
 
     if (!justLandedInStore) // the player gets another turn if they landed in their store
@@ -137,21 +152,21 @@ bool MancalaBoard::makeMove(int pit)
 void MancalaBoard::makeSteal(int lastPit, int lastSide)
 {
     // check if the player just landed on their own side
-    if (lastSide == activePlayer)
+    if (lastSide == m_activePlayer)
     {
         // check if the player just landed in an empty pit
-        if (playerPits[lastSide][lastPit] == 1)
+        if (m_playerPits[lastSide][lastPit] == 1)
         {
             // check if the pit across the board is not empty
             int oppositePit = boardWidth - lastPit - 1;
             int oppositeSide = 1 - lastSide;
-            if (playerPits[oppositeSide][oppositePit] != 0)
+            if (m_playerPits[oppositeSide][oppositePit] != 0)
             {
                 // steal the stones
-                playerStore[activePlayer] += playerPits[oppositeSide][oppositePit];
-                playerPits[oppositeSide][oppositePit] = 0;
-                playerStore[activePlayer] += playerPits[lastSide][lastPit];
-                playerPits[lastSide][lastPit] = 0;
+                m_playerStores[m_activePlayer] += m_playerPits[oppositeSide][oppositePit];
+                m_playerPits[oppositeSide][oppositePit] = 0;
+                m_playerStores[m_activePlayer] += m_playerPits[lastSide][lastPit];
+                m_playerPits[lastSide][lastPit] = 0;
 
                 justStole = true;
             }
@@ -167,15 +182,15 @@ void MancalaBoard::makeSteal(int lastPit, int lastSide)
  *
  * @param pit The pit (0-5) to move.
  *
- * @return `std::pair<int, int>` The last pit and side of the board a stone was placed.
+ * @return `Pair` The last pit and side of the board a stone was placed.
  */
-MancalaBoard::MoveResult MancalaBoard::moveStones(int pit)
+Pair MancalaBoard::moveStones(int pit)
 {
     // pick up stones from the pit
-    int stones{playerPits[activePlayer][pit]};
-    playerPits[activePlayer][pit] = 0;
+    int stones{m_playerPits[m_activePlayer][pit]};
+    m_playerPits[m_activePlayer][pit] = 0;
 
-    int activeSide{activePlayer}; // track the side of the board stones are being placed on
+    int activeSide{m_activePlayer}; // track the side of the board stones are being placed on
 
     while (stones > 0)
     {
@@ -190,38 +205,31 @@ MancalaBoard::MoveResult MancalaBoard::moveStones(int pit)
         // special case, the player just passed a store
         if (pit == 0)
         {
-            if (activeSide != activePlayer) // the player just passed their own store
+            if (activeSide != m_activePlayer) // the player just passed their own store
             {
-                playerStore[activePlayer]++; // they score
+                m_playerStores[m_activePlayer]++; // they score
                 stones--;
             }
             if (stones == 0) // the player just passed their store and has no more stones
             {
                 justLandedInStore = true;
                 // the last stone was placed on the other side of the board before the store
-                return MancalaBoard::MoveResult{0, 1 - activeSide};
+                return Pair{0, 1 - activeSide};
             }
         }
 
         // drop a stone in this pit
-        playerPits[activeSide][pit]++;
+        m_playerPits[activeSide][pit]++;
         stones--;
     }
     justLandedInStore = false;
-    return MancalaBoard::MoveResult{pit, activeSide};
+    return Pair{pit, activeSide};
 }
 
 /**
- * @brief Switches the `activePlayer` and updates the user facing `player` variable.
+ * @brief Switches the `activePlayer`.
  */
 void MancalaBoard::switchActivePlayer()
 {
-    if (activePlayer == 0)
-    {
-        activePlayer = 1;
-    }
-    else
-    {
-        activePlayer = 0;
-    }
+    m_activePlayer = 1 - m_activePlayer;
 }

@@ -29,33 +29,26 @@ using namespace board;
 class MancalaBoard
 {
 private:
-    struct MoveResult
-    {
-        int lastPit{};
-        int lastSide{};
+    int m_activePlayer{};
+    int m_playerPits[playerCount][boardWidth]{};
+    int m_playerStores[playerCount]{};
 
-        MoveResult(int pit, int side) : lastPit(pit), lastSide(side) {}
-    };
-
-    int playerPits[playerCount][boardWidth];
-    int playerStore[playerCount];
-    int activePlayer;
     bool isPlayerEmpty(int player);
     void makeSteal(int lastPit, int lastSide);
-    MoveResult moveStones(int pit);
+    Pair moveStones(int pit);
     void switchActivePlayer();
 
 public:
-    bool justStole;
-    bool justLandedInStore;
+    bool justStole{};
+    bool justLandedInStore{};
 
     MancalaBoard();
-    const int getPlayer();
-    const int getGameScore(int player);
-    auto getGameState() -> const decltype(playerPits) &;
-    int isGameOver();
-    bool makeMove(int pit);
     Pair endGame();
+    const int getPlayer() const;
+    const int getGameScore(int player) const;
+    const PlayerPitsType &getGameState() const;
+    bool isGameOver();
+    bool makeMove(int pit);
 };
 
 #endif

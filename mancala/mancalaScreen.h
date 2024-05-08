@@ -16,6 +16,7 @@ namespace screen
     constexpr int rsPin{12};
 
     constexpr char blank{' '};
+    constexpr char zero{'0'};
     constexpr char welcomeMessageTop[]{"Send any key"};
     constexpr char welcomeMessageBottom[]{"to begin Mancala"};
     constexpr char inputErrorTop[]{"Invalid input,"};
@@ -23,6 +24,8 @@ namespace screen
     constexpr char gameOverMessage[]{"Game over!"};
     constexpr char standingsMessageTie[]{"It's a tie!"};
     constexpr char pitErrorBottom[]{"can't be empty."};
+    constexpr char stealMessage[]{"Steal!"};
+    constexpr char storeMessage[]{"Move again!"};
 
     constexpr int boardOffset{1};
 }

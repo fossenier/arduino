@@ -169,6 +169,7 @@ void MancalaBoard::makeSteal(int lastPit, int lastSide)
                 m_playerPits[lastSide][lastPit] = 0;
 
                 justStole = true;
+                return;
             }
         }
     }

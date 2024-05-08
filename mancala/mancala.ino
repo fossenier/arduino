@@ -57,14 +57,14 @@ void loop()
     if (game.justStole)
     {
         lcd.clear();
-        centerPrint(lcd, "Steal!", 0);
+        centerPrint(lcd, stealMessage, 0);
         delay(1000);
         lcd.clear();
     }
     else if (game.justLandedInStore)
     {
         lcd.clear();
-        centerPrint(lcd, "Move again!", 0);
+        centerPrint(lcd, storeMessage, 0);
         delay(1000);
         lcd.clear();
     }
@@ -78,13 +78,13 @@ void displayGameScore(const int score0, const int score1, int activePlayer)
         const int score{(i == 0) ? score0 : score1};
         if (score < 10)
         {
-            displayScore[0] = ' ';
-            displayScore[1] = '0' + score;
+            displayScore[0] = blank;
+            displayScore[1] = zero + score;
         }
         else
         {
-            displayScore[0] = '0' + score / 10;
-            displayScore[1] = '0' + score % 10;
+            displayScore[0] = zero + score / 10;
+            displayScore[1] = zero + score % 10;
         }
 
         displayScore[2] = '\0'; // null-terminate the string
@@ -115,13 +115,13 @@ void displayGameState(const PlayerPitsType &state, int activePlayer)
 
             if (pitNumber < 10)
             {
-                pitNumbers[stringIndex++] = ' ';
-                pitNumbers[stringIndex++] = '0' + pitNumber;
+                pitNumbers[stringIndex++] = blank;
+                pitNumbers[stringIndex++] = zero + pitNumber;
             }
             else
             {
-                pitNumbers[stringIndex++] = '0' + pitNumber / 10;
-                pitNumbers[stringIndex++] = '0' + pitNumber % 10;
+                pitNumbers[stringIndex++] = zero + pitNumber / 10;
+                pitNumbers[stringIndex++] = zero + pitNumber % 10;
             }
         }
 
@@ -217,7 +217,7 @@ void handlePlayerMove()
     }
 
     // the user picked an empty pit
-    if (!game.makeMove(input - '0' - 1))
+    if (!game.makeMove(input - zero - 1))
     {
         Serial.print(inputErrorTop);
         Serial.print(blank);

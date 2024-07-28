@@ -12,8 +12,8 @@ namespace screen
     constexpr int db6Pin{3};
     constexpr int db5Pin{4};
     constexpr int db4Pin{5};
-    constexpr int enPin{10};
-    constexpr int rsPin{11};
+    constexpr int enPin{9};
+    constexpr int rsPin{10};
 
     constexpr char blank{' '};
     constexpr char zero{'0'};

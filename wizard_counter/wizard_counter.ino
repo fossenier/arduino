@@ -19,8 +19,24 @@ void setup()
     lcd.clear();
     centerPrint(lcd, welcomeMessageTop, 0);
     centerPrint(lcd, welcomeMessageBottom, 1);
+
+    delay(1000);
 }
 
 void loop()
 {
+    if (digitalRead(nextButtonPin) == HIGH)
+    {
+        lcd.clear();
+        centerPrint(lcd, welcomeMessageTop, 0);
+        centerPrint(lcd, welcomeMessageBottom, 1);
+        delay(1000);
+    }
+    else if (digitalRead(selectButtonPin) == HIGH)
+    {
+        lcd.clear();
+        centerPrint(lcd, "hi", 0);
+        centerPrint(lcd, "ho", 1);
+        delay(1000);
+    }
 }

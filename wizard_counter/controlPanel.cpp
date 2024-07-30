@@ -18,6 +18,10 @@ void ControlPanel::checkButton(Button &button)
                 button.lastPressTime = millis();
             }
         }
+        else
+        {
+            button.pressed = false;
+        }
     }
     else
     {

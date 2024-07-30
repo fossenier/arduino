@@ -3,14 +3,13 @@ A counter for the card game Wizard.
 */
 
 #include <LiquidCrystal.h>
-
 #include "wizardScreen.h"
+#include "controlPanel.h"
 
 using namespace screen;
 
 LiquidCrystal lcd(rsPin, enPin, db4Pin, db5Pin, db6Pin, db7Pin);
-constexpr int nextButtonPin{12};
-constexpr int selectButtonPin{13};
+ControlPanel panel;
 
 void setup()
 {
@@ -25,18 +24,52 @@ void setup()
 
 void loop()
 {
-    if (digitalRead(nextButtonPin) == HIGH)
+    panel.cycle();
+
+    if (panel.isNext())
     {
         lcd.clear();
-        centerPrint(lcd, welcomeMessageTop, 0);
-        centerPrint(lcd, welcomeMessageBottom, 1);
-        delay(1000);
+        centerPrint(lcd, "Next Pressed", 0);
+        centerPrint(lcd, "Random Func 1", 1);
     }
-    else if (digitalRead(selectButtonPin) == HIGH)
+    else if (panel.isSelect())
     {
         lcd.clear();
-        centerPrint(lcd, "hi", 0);
-        centerPrint(lcd, "ho", 1);
-        delay(1000);
+        centerPrint(lcd, "Select Pressed", 0);
+        centerPrint(lcd, "Random Func 2", 1);
+    }
+    else if (panel.isPrev())
+    {
+        lcd.clear();
+        centerPrint(lcd, "Prev Pressed", 0);
+        centerPrint(lcd, "Random Func 3", 1);
     }
 }
+
+/*
+
+welcome player (welcome / press select)
+wait for player to press select
+
+get number of players (1-6)
+create gamestate with that many players
+
+while game not over (60 cards / players remainder => last round)
+    for each player (left of dealer)
+        display player name
+        get player bid (0+)
+        display player bid
+        AND if dealer, make sure sum of bids is not the round number
+    for each player (left of dealer)
+        display player name
+        get player trick points (0+)
+        display player earned score
+    display standings
+
+display GAME OVER!
+display winner
+display standings
+
+
+
+*/

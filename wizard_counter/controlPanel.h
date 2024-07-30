@@ -19,7 +19,7 @@ private:
     {
         bool pressed{};
         unsigned long lastPressTime{};
-        int pin;
+        int pin{};
 
         Button(int p) : pin(p) {}
     };

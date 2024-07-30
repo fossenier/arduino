@@ -5,6 +5,7 @@ namespace gameState
 {
     constexpr int minPlayers{3};
     constexpr int maxPlayers{6};
+    constexpr int nameLength{3};
 }
 
 using namespace gameState;

@@ -18,10 +18,33 @@ void setup()
     // Set up initial LCD state.
     lcd.begin(screenWidth, screenHeight);
     lcd.clear();
+    // Say hello to the player.
     welcomeMessage();
-    int count{playerCount()};
-    char countChar[2]{static_cast<char>(count + '0'), '\0'};
-    centerPrint(lcd, countChar, 0);
+    // Find out who's playing.
+    int playerCount{getPlayerCount()};
+    char playerNames[maxPlayers][nameLength + 1]{};
+    // Get the names of the players.
+    for (int i = 0; i < playerCount; ++i)
+    {
+        char *name{getPlayerName()};
+        for (int j = 0; j < nameLength + 1; ++j)
+        {
+            playerNames[i][j] = name[j];
+        }
+        centerPrint(lcd, playerNames[i], 0);
+        centerPrint(lcd, playerNameBottom, 1);
+        delay(messageDelay);
+        lcd.clear();
+    }
+    // Get the dealer.
+    int dealer{getDealer(playerNames, playerCount)};
+    // Create the game state.
+    GameState game(playerCount, dealer);
+    // Set the player names.
+    for (int i = 0; i < playerCount; ++i)
+    {
+        game.setPlayerName(i, playerNames[i]);
+    }
 }
 
 void loop()
@@ -48,7 +71,146 @@ void loop()
     }
 }
 
-int playerCount()
+int getDealer(char playerNames[][nameLength + 1], int playerCount)
+{
+    // Tell the player to select the dealer.
+    centerPrint(lcd, dealerMessageTop, 0);
+
+    // Assume the first player is the dealer.
+    int dealer = 0;
+
+    // Display the first player's name initially
+    centerPrint(lcd, playerNames[dealer], 1);
+
+    while (true)
+    {
+        panel.cycle();
+
+        // If the player selects, break out of the loop.
+        if (panel.isSelect())
+            break;
+        // If the player presses next, increment the dealer.
+        else if (panel.isNext())
+        {
+            dealer = (dealer + 1) % playerCount;
+            centerPrint(lcd, playerNames[dealer], 1);
+        }
+        // If the player presses prev, decrement the dealer.
+        else if (panel.isPrev())
+        {
+            dealer = (dealer - 1 + playerCount) % playerCount;
+            centerPrint(lcd, playerNames[dealer], 1);
+        }
+    }
+    lcd.clear();
+    return dealer;
+}
+
+char *getPlayerName()
+{
+    static char name[nameLength + 1]{}; // The player's name (that we are building)
+    int nameIndex = 0;                  // The index of the character we are currently editing
+    int segmentStart = 0;               // The start of the current three-character segment
+    bool selectingSegment = true;       // Whether we are selecting a segment
+    const int segmentLength = 3;        // The length of the segment
+
+    const int selectionStart = (screenWidth - nameLength) / 2; // The index of the first character on the screen
+    int cursorIndex = selectionStart;                          // The index of the cursor on the screen
+
+    // Tell the player to enter their name
+    centerPrint(lcd, playerNameTop, 0);
+
+    // Display the initial segment
+    for (int i = 0; i < segmentLength; ++i)
+    {
+        lcd.setCursor(selectionStart + i, 1);
+        lcd.print(alphabet[segmentStart + i]);
+    }
+    // Display the cursor without blinking initially
+    lcd.setCursor(cursorIndex, 1);
+    lcd.noBlink();
+
+    // Once for each character in the name
+    while (nameIndex < nameLength)
+    {
+        panel.cycle();
+
+        // If the player selects
+        if (panel.isSelect())
+        {
+            if (selectingSegment)
+            {
+                selectingSegment = false;
+                lcd.blink();
+            }
+            else
+            {
+                selectingSegment = true;
+                name[nameIndex] = alphabet[segmentStart + (cursorIndex - selectionStart) % segmentLength];
+                lcd.noBlink();
+                lcd.setCursor(cursorIndex, 1);
+                lcd.print(name[nameIndex]);
+                nameIndex++;
+                cursorIndex = selectionStart + nameIndex;
+
+                // Reset to initial segment (ABC)
+                segmentStart = 0;
+                for (int i = 0; i < segmentLength; ++i)
+                {
+                    lcd.setCursor(selectionStart + i, 1);
+                    lcd.print(alphabet[segmentStart + i]);
+                }
+
+                lcd.setCursor(cursorIndex, 1);
+            }
+        }
+        // If the player presses next
+        else if (panel.isNext())
+        {
+            if (selectingSegment)
+            {
+                segmentStart = (segmentStart + segmentLength) % alphabetLength;
+                for (int i = 0; i < segmentLength; ++i)
+                {
+                    lcd.setCursor(selectionStart + i, 1);
+                    lcd.print(alphabet[segmentStart + i]);
+                }
+                lcd.setCursor(cursorIndex, 1);
+            }
+            else
+            {
+                cursorIndex = (cursorIndex + 1) % segmentLength + selectionStart;
+                lcd.setCursor(cursorIndex, 1);
+            }
+        }
+        // If the player presses prev
+        else if (panel.isPrev())
+        {
+            if (selectingSegment)
+            {
+                segmentStart = (segmentStart - segmentLength + alphabetLength) % alphabetLength;
+                for (int i = 0; i < segmentLength; ++i)
+                {
+                    lcd.setCursor(selectionStart + i, 1);
+                    lcd.print(alphabet[segmentStart + i]);
+                }
+                lcd.setCursor(cursorIndex, 1);
+            }
+            else
+            {
+                cursorIndex = (cursorIndex - 1 + segmentLength) % segmentLength + selectionStart;
+                lcd.setCursor(cursorIndex, 1);
+            }
+        }
+    }
+
+    name[nameLength] = '\0'; // Null-terminate the name
+    lcd.noBlink();
+    lcd.clear();
+    return name;
+}
+
+int getPlayerCount()
 {
     // Tell the player to select the number of players.
     centerPrint(lcd, playerCountTop, 0);

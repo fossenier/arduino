@@ -22,6 +22,11 @@ namespace screen
     constexpr char welcomeMessageTop2[]{"Press select to"};
     constexpr char welcomeMessageBottom2[]{"begin."};
     constexpr char playerCountTop[]{"# of players?"};
+    constexpr char alphabet[]{"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+    constexpr int alphabetLength{sizeof(alphabet) - 1};
+    constexpr char playerNameTop[]{"Select a name."};
+    constexpr char playerNameBottom[]{"is ready!"};
+    constexpr char dealerMessageTop[]{"Select dealer."};
 
     constexpr char blank{' '};
     constexpr char zero{'0'};

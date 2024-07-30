@@ -13,9 +13,10 @@ using namespace screen;
 LiquidCrystal lcd(rsPin, enPin, db4Pin, db5Pin, db6Pin, db7Pin);
 ControlPanel panel;
 
-GameState *game = nullptr;
+GameState *game{nullptr};
 int roundLimit{};
 int currentRound{0};
+const char *winningPlayer{nullptr};
 
 void setup()
 {
@@ -57,9 +58,9 @@ void setup()
 void loop()
 {
     currentRound++;
-    if (currentRound >= roundLimit)
-        // endGame();
-        ;
+    // if (currentRound >= roundLimit)
+    if (currentRound == 2)
+        endGame();
 
     // Handle this round's starting on dealer and going clockwise.
     int bidSum{0};
@@ -111,11 +112,115 @@ void loop()
     lcd.clear();
 
     // Display the standings.
-    displayStandings();
+    winningPlayer = displayStandings();
 }
 
-void displayStandings()
+void endGame()
 {
+    centerPrint(lcd, gameOverTop, 0);
+    int messageLength = sizeof(gameOverBottom);
+    char message[messageLength];
+
+    for (int i = 0; i < messageLength; ++i)
+    {
+        message[i] = gameOverBottom[i];
+    }
+    for (int i = 0; i < nameLength; ++i)
+    {
+        message[i] = winningPlayer[i];
+    }
+    centerPrint(lcd, message, 1);
+
+    delay(messageDelay * 3);
+
+    while (true)
+        displayStandings();
+}
+
+// Function to swap two integers
+void swap(int &a, int &b)
+{
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+// Function to swap two character pointers
+void swap(const char *&a, const char *&b)
+{
+    const char *temp = a;
+    a = b;
+    b = temp;
+}
+
+const char *displayStandings()
+{
+    const int playerCount = game->m_playerCount;
+    int scores[playerCount];
+    const char *names[playerCount];
+
+    // Copy scores and names from the game object
+    for (int i = 0; i < playerCount; ++i)
+    {
+        scores[i] = game->getPlayerScore(i);
+        names[i] = game->getPlayerName(i);
+    }
+
+    // Bubble sort based on scores
+    for (int i = 0; i < playerCount - 1; ++i)
+    {
+        for (int j = 0; j < playerCount - i - 1; ++j)
+        {
+            if (scores[j] < scores[j + 1])
+            {
+                swap(scores[j], scores[j + 1]);
+                swap(names[j], names[j + 1]);
+            }
+        }
+    }
+
+    long lastRefresh = millis();
+    int currentPlayerIndex = 0;
+
+    while (true)
+    {
+        panel.cycle();
+        if (panel.isSelect())
+            break;
+
+        if (millis() - lastRefresh >= messageDelay)
+        {
+            // Clear the screen
+            lcd.clear();
+
+            // Display the current player on the top row
+            lcd.setCursor(0, 0);
+            lcd.print(currentPlayerIndex + 1);
+            lcd.print(". ");
+            lcd.print(names[currentPlayerIndex]);
+            lcd.print(": ");
+            lcd.print(scores[currentPlayerIndex]);
+
+            // Update to the next player index
+            int nextPlayerIndex = (currentPlayerIndex + 1) % playerCount;
+
+            // Display the next player on the bottom row
+            lcd.setCursor(0, 1);
+            lcd.print(nextPlayerIndex + 1);
+            lcd.print(". ");
+            lcd.print(names[nextPlayerIndex]);
+            lcd.print(": ");
+            lcd.print(scores[nextPlayerIndex]);
+
+            // Update to the next player
+            currentPlayerIndex = nextPlayerIndex;
+
+            lastRefresh = millis();
+        }
+    }
+
+    lcd.clear();
+    return names[0];
 }
 
 int getPlayerTricks(const char *playerName)

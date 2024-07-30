@@ -36,6 +36,8 @@ namespace screen
     constexpr char emptyMessage[]{" "};
     constexpr char playerTricksTop[]{"---'s tricks:"};
     constexpr char playerTricksSuccessTop[]{"You scored:"};
+    constexpr char gameOverTop[]{"Game over!"};
+    constexpr char gameOverBottom[]{"--- wins!"};
 
     constexpr char blank{' '};
     constexpr char zero{'0'};

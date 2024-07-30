@@ -15,7 +15,7 @@ namespace screen
     constexpr int enPin{9};
     constexpr int rsPin{10};
 
-    constexpr long messageDelay{3000};
+    constexpr long messageDelay{1000};
 
     constexpr char welcomeMessageTop1[]{"Welcome to the"};
     constexpr char welcomeMessageBottom1[]{"Wizard counter!"};
@@ -27,13 +27,15 @@ namespace screen
     constexpr char playerNameTop[]{"Select a name."};
     constexpr char playerNameBottom[]{"is ready!"};
     constexpr char dealerMessageTop[]{"Select dealer."};
+    constexpr char dealerMessageBottom[]{"is the dealer."};
     constexpr char playerBidTop[]{"--- please bid."};
-    constexpr int playerBidTopLength{16};
     constexpr char playerBidErrorTop[]{"Can't bid that."};
     constexpr char playerBidSuccessTop[]{"You bid:"};
     constexpr char roundBidTop[]{"Round bid:"};
     constexpr char waitingMessage[]{"Waiting..."};
     constexpr char emptyMessage[]{" "};
+    constexpr char playerTricksTop[]{"---'s tricks:"};
+    constexpr char playerTricksSuccessTop[]{"You scored:"};
 
     constexpr char blank{' '};
     constexpr char zero{'0'};

@@ -53,21 +53,26 @@ void GameState::setPlayerBid(int playerIndex, int bid)
     }
 }
 
-// Method to update the player's score based on trick points.
-void GameState::updatePlayerScore(int playerIndex, int tricks)
+// Method to shift the dealer to the next player.
+void GameState::shiftDealer()
 {
-    if (playerIndex >= 0 && playerIndex < m_playerCount)
-    {
-        int bid = m_players[playerIndex].bid;
-        int bidOffset = (bid > tricks) ? (bid - tricks) : (tricks - bid);
+    m_dealer = (m_dealer + 1) % m_playerCount;
+}
 
-        if (bidOffset == 0)
-        {
-            m_players[playerIndex].score += 20 + bid * 10;
-        }
-        else
-        {
-            m_players[playerIndex].score -= bidOffset * 10;
-        }
+// Method to update the player's score based on trick points.
+int GameState::updatePlayerScore(int playerIndex, int tricks)
+{
+    int bid = m_players[playerIndex].bid;
+    int bidOffset = (bid > tricks) ? (bid - tricks) : (tricks - bid);
+    int score{0};
+    if (bidOffset == 0)
+    {
+        score += 20 + bid * 10;
     }
+    else
+    {
+        score -= bidOffset * 10;
+    }
+    m_players[playerIndex].score += score;
+    return score;
 }

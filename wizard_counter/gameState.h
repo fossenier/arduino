@@ -35,7 +35,8 @@ public:
     int getPlayerScore(int playerIndex);
     void setPlayerName(int playerIndex, const char *name);
     void setPlayerBid(int playerIndex, int bid);
-    void updatePlayerScore(int playerIndex, int tricks);
+    void shiftDealer();
+    int updatePlayerScore(int playerIndex, int tricks);
 };
 
 #endif

@@ -61,15 +61,17 @@ void loop()
         // endGame();
         ;
 
-    // Handle this round's bidding.
+    // Handle this round's starting on dealer and going clockwise.
     int bidSum{0};
-    for (int i = 0; i < game->m_playerCount; ++i)
+    const int leftOfDealer = game->m_dealer + 1;
+    for (int i = leftOfDealer; i < game->m_playerCount + leftOfDealer; ++i)
     {
+        int j = i % game->m_playerCount;
         // Display player name.
-        char *playerName{game->getPlayerName(i)};
+        char *playerName{game->getPlayerName(j)};
         // Get player bid (0+).
-        int bid{getPlayerBid(playerName, bidSum, i == game->m_dealer)};
-        game->setPlayerBid(i, bid);
+        int bid{getPlayerBid(playerName, bidSum, j == game->m_dealer)};
+        game->setPlayerBid(j, bid);
         bidSum += bid;
         // Display player bid.
         centerPrint(lcd, playerBidSuccessTop, 0);
@@ -85,83 +87,98 @@ void loop()
     // Await the round being played
     responsiveMessage(waitingMessage, emptyMessage, emptyMessage, waitingMessage);
 
-    // Handle this round's scoring.
-    for (int i = 0; i < game->m_playerCount; ++i)
+    // Handle this round's trick points.
+    for (int i = leftOfDealer; i < game->m_playerCount + leftOfDealer; ++i)
     {
+        int j = i % game->m_playerCount;
         // Display player name.
-        char *playerName{game->getPlayerName(i)};
+        char *playerName{game->getPlayerName(j)};
         // Get player trick points (0+).
         int tricks{getPlayerTricks(playerName)};
         // Display player earned score.
-        game->updatePlayerScore(i, tricks);
-        centerPrint(lcd, playerName, 0);
-        centerPrint(lcd, game->getPlayerScore(i), 1);
+        int score{game->updatePlayerScore(j, tricks)};
+        centerPrint(lcd, playerTricksSuccessTop, 0);
+        centerPrint(lcd, score, 1);
         delay(messageDelay);
         lcd.clear();
     }
+
+    // Shift the dealer clockwise.
+    game->shiftDealer();
+    centerPrint(lcd, game->getPlayerName(game->m_dealer), 0);
+    centerPrint(lcd, dealerMessageBottom, 1);
+    delay(messageDelay);
+    lcd.clear();
+
+    // Display the standings.
+    displayStandings();
+}
+
+void displayStandings()
+{
 }
 
 int getPlayerTricks(const char *playerName)
 {
-    // Tell the player to enter their trick points.
-    char message[playerBidTopLength];
-    for (int i = 0; i < playerBidTopLength; ++i)
+    int promptLength = sizeof(playerTricksTop);
+    char prompt[promptLength];
+
+    for (int i = 0; i < promptLength; ++i)
     {
-        message[i] = playerBidTop[i];
+        prompt[i] = playerTricksTop[i];
     }
     for (int i = 0; i < nameLength; ++i)
     {
-        message[playerBidTopLength + i] = playerName[i];
+        prompt[i] = playerName[i];
     }
-    centerPrint(lcd, message, 0);
 
-    // Assume the minimum bid.
-    int tricks{0};
+    centerPrint(lcd, prompt, 0);
+
+    // Assume the minimum bid
+    int tricks = minBid;
+
     while (true)
     {
         panel.cycle();
-        // If the player selects, break out of the loop.
+
         if (panel.isSelect())
+        {
             break;
-        // If the player presses next, increment the bid.
+        }
         else if (panel.isNext())
         {
             ++tricks;
         }
-        // If the player presses prev, decrement the bid.
-        else if (panel.isPrev())
+        else if (panel.isPrev() && tricks > 0)
         {
-            if (tricks > 0)
-            {
-                --tricks;
-            }
+            --tricks;
         }
-        // Display the current bid.
-        centerPrint(lcd, tricks, 1);
+
+        // Display the earned tricks
+        lcd.setCursor(0, 1); // Assuming a 2-line LCD display
+        lcd.print("Tricks: ");
+        lcd.print(tricks);
     }
+
     lcd.clear();
     return tricks;
 }
 
 int getPlayerBid(const char *playerName, int bidSum, bool dealer)
 {
-    // Create the message to display
-    char message[playerBidTopLength];
+    int promptLength = sizeof(playerBidTop);
+    char prompt[promptLength];
 
-    // Copy playerBidTop into message
-    int i = 0;
-    for (; i < playerBidTopLength; ++i)
+    for (int i = 0; i < promptLength; ++i)
     {
-        message[i] = playerBidTop[i];
+        prompt[i] = playerBidTop[i];
     }
-    // Copy playerName into message
-    for (int j = 0; j < nameLength; ++j, ++i)
+    for (int i = 0; i < nameLength; ++i)
     {
-        message[i] = playerName[j];
+        prompt[i] = playerName[i];
     }
-    message[i] = '\0'; // Null-terminate the string
 
-    centerPrint(lcd, message, 0);
+    centerPrint(lcd, prompt, 0);
 
     // Assume the minimum bid
     int bid = 0;
@@ -172,11 +189,11 @@ int getPlayerBid(const char *playerName, int bidSum, bool dealer)
 
         if (panel.isSelect())
         {
-            if (dealer && bidSum == currentRound)
+            if (dealer && bidSum + bid == currentRound)
             {
                 centerPrint(lcd, playerBidErrorTop, 0);
                 delay(messageDelay);
-                centerPrint(lcd, message, 0);
+                centerPrint(lcd, prompt, 0);
             }
             else
             {
@@ -233,6 +250,12 @@ int getDealer(char playerNames[][nameLength + 1], int playerCount)
             centerPrint(lcd, playerNames[dealer], 1);
         }
     }
+    // Notify the player that the dealer has been selected.
+    lcd.clear();
+    centerPrint(lcd, playerNames[dealer], 0);
+    centerPrint(lcd, dealerMessageBottom, 1);
+    delay(messageDelay);
+
     lcd.clear();
     return dealer;
 }

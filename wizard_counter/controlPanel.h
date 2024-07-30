@@ -3,10 +3,12 @@
 
 namespace controlPanel
 {
+    // Breadboard wiring.
     constexpr int selectButtonPin{11};
     constexpr int prevButtonPin{12};
     constexpr int nextButtonPin{13};
 
+    // Time before a button hold counts as a new press.
     constexpr long debounceDelay{500};
 }
 

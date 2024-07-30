@@ -1,8 +1,7 @@
 #include "GameState.h"
-#include <cstring>
 
 // Constructor to initialize the game state.
-GameState::GameState(int playerCount) : m_playerCount{playerCount}, m_dealer{0}
+GameState::GameState(int playerCount, int dealer) : m_playerCount{playerCount}, m_dealer{dealer}
 {
     // Initialize players with empty names.
     for (int i = 0; i < m_playerCount; ++i)
@@ -12,11 +11,15 @@ GameState::GameState(int playerCount) : m_playerCount{playerCount}, m_dealer{0}
 }
 
 // Method to set the player's name.
-void GameState::setPlayerName(int playerIndex, const char *name)
+void GameState::setPlayerName(int playerIndex, const char name[])
 {
     if (playerIndex >= 0 && playerIndex < m_playerCount)
     {
-        std::strncpy(m_players[playerIndex].name, name, 4);
+        // Copy each of the 3 letters of the name (plus null).
+        for (int i = 0; i < 4; ++i)
+        {
+            m_players[playerIndex].name[i] = name[i];
+        }
     }
 }
 
@@ -30,14 +33,18 @@ void GameState::setPlayerBid(int playerIndex, int bid)
 }
 
 // Method to update the player's score based on trick points.
-void GameState::updatePlayerScore(int playerIndex, int trickPoints)
+void GameState::updatePlayerScore(int playerIndex, int tricks)
 {
     if (playerIndex >= 0 && playerIndex < m_playerCount)
     {
-        if (m_players[playerIndex].bid == trickPoints)
+        int bidOffset = abs(m_players[playerIndex].bid - tricks);
+        if (bidOffset == 0)
         {
-            // Implement the score increase function as needed.
-            m_players[playerIndex].score += trickPoints; // Placeholder implementation.
+            m_players[playerIndex].score += 20 + m_players[playerIndex].bid * 10;
+        }
+        else
+        {
+            m_players[playerIndex].score -= bidOffset * 10;
         }
     }
 }

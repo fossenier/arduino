@@ -53,6 +53,7 @@ wait for player to press select
 
 get number of players (1-6)
 create gamestate with that many players
+get dealer
 
 while game not over (60 cards / players remainder => last round)
     for each player (left of dealer)

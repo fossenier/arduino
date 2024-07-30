@@ -13,13 +13,17 @@ using namespace screen;
 LiquidCrystal lcd(rsPin, enPin, db4Pin, db5Pin, db6Pin, db7Pin);
 ControlPanel panel;
 
+GameState *game = nullptr;
+int roundLimit{};
+int currentRound{0};
+
 void setup()
 {
     // Set up initial LCD state.
     lcd.begin(screenWidth, screenHeight);
     lcd.clear();
     // Say hello to the player.
-    welcomeMessage();
+    responsiveMessage(welcomeMessageTop1, welcomeMessageBottom1, welcomeMessageTop2, welcomeMessageBottom2);
     // Find out who's playing.
     int playerCount{getPlayerCount()};
     char playerNames[maxPlayers][nameLength + 1]{};
@@ -39,36 +43,163 @@ void setup()
     // Get the dealer.
     int dealer{getDealer(playerNames, playerCount)};
     // Create the game state.
-    GameState game(playerCount, dealer);
+    game = new GameState(playerCount, dealer);
     // Set the player names.
     for (int i = 0; i < playerCount; ++i)
     {
-        game.setPlayerName(i, playerNames[i]);
+        game->setPlayerName(i, playerNames[i]);
     }
+
+    // Set the round limit.
+    roundLimit = cardCount / playerCount;
 }
 
 void loop()
 {
-    panel.cycle();
+    currentRound++;
+    if (currentRound >= roundLimit)
+        // endGame();
+        ;
 
-    if (panel.isNext())
+    // Handle this round's bidding.
+    int bidSum{0};
+    for (int i = 0; i < game->m_playerCount; ++i)
     {
+        // Display player name.
+        char *playerName{game->getPlayerName(i)};
+        // Get player bid (0+).
+        int bid{getPlayerBid(playerName, bidSum, i == game->m_dealer)};
+        game->setPlayerBid(i, bid);
+        bidSum += bid;
+        // Display player bid.
+        centerPrint(lcd, playerBidSuccessTop, 0);
+        centerPrint(lcd, bid, 1);
+        delay(messageDelay);
         lcd.clear();
-        centerPrint(lcd, "Next Pressed", 0);
-        centerPrint(lcd, "Random Func 1", 1);
     }
-    else if (panel.isSelect())
+    // Display this round's total bids.
+    centerPrint(lcd, roundBidTop, 0);
+    centerPrint(lcd, bidSum, 1);
+    delay(messageDelay);
+    lcd.clear();
+    // Await the round being played
+    responsiveMessage(waitingMessage, emptyMessage, emptyMessage, waitingMessage);
+
+    // Handle this round's scoring.
+    for (int i = 0; i < game->m_playerCount; ++i)
     {
+        // Display player name.
+        char *playerName{game->getPlayerName(i)};
+        // Get player trick points (0+).
+        int tricks{getPlayerTricks(playerName)};
+        // Display player earned score.
+        game->updatePlayerScore(i, tricks);
+        centerPrint(lcd, playerName, 0);
+        centerPrint(lcd, game->getPlayerScore(i), 1);
+        delay(messageDelay);
         lcd.clear();
-        centerPrint(lcd, "Select Pressed", 0);
-        centerPrint(lcd, "Random Func 2", 1);
     }
-    else if (panel.isPrev())
+}
+
+int getPlayerTricks(const char *playerName)
+{
+    // Tell the player to enter their trick points.
+    char message[playerBidTopLength];
+    for (int i = 0; i < playerBidTopLength; ++i)
     {
-        lcd.clear();
-        centerPrint(lcd, "Prev Pressed", 0);
-        centerPrint(lcd, "Random Func 3", 1);
+        message[i] = playerBidTop[i];
     }
+    for (int i = 0; i < nameLength; ++i)
+    {
+        message[playerBidTopLength + i] = playerName[i];
+    }
+    centerPrint(lcd, message, 0);
+
+    // Assume the minimum bid.
+    int tricks{0};
+    while (true)
+    {
+        panel.cycle();
+        // If the player selects, break out of the loop.
+        if (panel.isSelect())
+            break;
+        // If the player presses next, increment the bid.
+        else if (panel.isNext())
+        {
+            ++tricks;
+        }
+        // If the player presses prev, decrement the bid.
+        else if (panel.isPrev())
+        {
+            if (tricks > 0)
+            {
+                --tricks;
+            }
+        }
+        // Display the current bid.
+        centerPrint(lcd, tricks, 1);
+    }
+    lcd.clear();
+    return tricks;
+}
+
+int getPlayerBid(const char *playerName, int bidSum, bool dealer)
+{
+    // Create the message to display
+    char message[playerBidTopLength];
+
+    // Copy playerBidTop into message
+    int i = 0;
+    for (; i < playerBidTopLength; ++i)
+    {
+        message[i] = playerBidTop[i];
+    }
+    // Copy playerName into message
+    for (int j = 0; j < nameLength; ++j, ++i)
+    {
+        message[i] = playerName[j];
+    }
+    message[i] = '\0'; // Null-terminate the string
+
+    centerPrint(lcd, message, 0);
+
+    // Assume the minimum bid
+    int bid = 0;
+
+    while (true)
+    {
+        panel.cycle();
+
+        if (panel.isSelect())
+        {
+            if (dealer && bidSum == currentRound)
+            {
+                centerPrint(lcd, playerBidErrorTop, 0);
+                delay(messageDelay);
+                centerPrint(lcd, message, 0);
+            }
+            else
+            {
+                break;
+            }
+        }
+        else if (panel.isNext() && bid < currentRound)
+        {
+            ++bid;
+        }
+        else if (panel.isPrev() && bid > 0)
+        {
+            --bid;
+        }
+
+        // Display the current bid
+        lcd.setCursor(0, 1); // Assuming a 2-line LCD display
+        lcd.print("Bid: ");
+        lcd.print(bid);
+    }
+
+    lcd.clear();
+    return bid;
 }
 
 int getDealer(char playerNames[][nameLength + 1], int playerCount)
@@ -246,7 +377,7 @@ int getPlayerCount()
     return count;
 }
 
-void welcomeMessage()
+void responsiveMessage(const char messageTop1[], const char messageBottom1[], const char messageTop2[], const char messageBottom2[])
 {
     long lastRefresh{millis()};
     int displayMessage{0};
@@ -263,8 +394,8 @@ void welcomeMessage()
             if (displayMessage != 1)
             {
                 lcd.clear();
-                centerPrint(lcd, welcomeMessageTop1, 0);
-                centerPrint(lcd, welcomeMessageBottom1, 1);
+                centerPrint(lcd, messageTop1, 0);
+                centerPrint(lcd, messageBottom1, 1);
                 displayMessage = 1;
             }
         }
@@ -273,8 +404,8 @@ void welcomeMessage()
             if (displayMessage != 2)
             {
                 lcd.clear();
-                centerPrint(lcd, welcomeMessageTop2, 0);
-                centerPrint(lcd, welcomeMessageBottom2, 1);
+                centerPrint(lcd, messageTop2, 0);
+                centerPrint(lcd, messageBottom2, 1);
                 displayMessage = 2;
             }
         }

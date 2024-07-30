@@ -8,6 +8,27 @@ GameState::GameState(int playerCount, int dealer) : m_playerCount{playerCount}, 
     {
         m_players[i] = Player();
     }
+    m_playerCount = playerCount;
+}
+
+// Method to get the player's name.
+char *GameState::getPlayerName(int playerIndex)
+{
+    if (playerIndex >= 0 && playerIndex < m_playerCount)
+    {
+        return m_players[playerIndex].name;
+    }
+    return nullptr;
+}
+
+// Method to get the player's score.
+int GameState::getPlayerScore(int playerIndex)
+{
+    if (playerIndex >= 0 && playerIndex < m_playerCount)
+    {
+        return m_players[playerIndex].score;
+    }
+    return 0;
 }
 
 // Method to set the player's name.

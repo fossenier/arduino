@@ -27,6 +27,13 @@ namespace screen
     constexpr char playerNameTop[]{"Select a name."};
     constexpr char playerNameBottom[]{"is ready!"};
     constexpr char dealerMessageTop[]{"Select dealer."};
+    constexpr char playerBidTop[]{"--- please bid."};
+    constexpr int playerBidTopLength{16};
+    constexpr char playerBidErrorTop[]{"Can't bid that."};
+    constexpr char playerBidSuccessTop[]{"You bid:"};
+    constexpr char roundBidTop[]{"Round bid:"};
+    constexpr char waitingMessage[]{"Waiting..."};
+    constexpr char emptyMessage[]{" "};
 
     constexpr char blank{' '};
     constexpr char zero{'0'};

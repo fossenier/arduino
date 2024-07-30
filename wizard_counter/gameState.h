@@ -6,6 +6,8 @@ namespace gameState
     constexpr int minPlayers{3};
     constexpr int maxPlayers{6};
     constexpr int nameLength{3};
+    constexpr int cardCount{60};
+    constexpr int minBid{0};
 }
 
 using namespace gameState;
@@ -23,11 +25,14 @@ private:
     };
 
     Player m_players[6]{}; // Array of players (at most 6).
-    int m_playerCount{};   // Number of players.
-    int m_dealer{};        // Index of the dealer.
 
 public:
+    int m_dealer{};      // Index of the dealer.
+    int m_playerCount{}; // Number of players.
+
     GameState(int playerCount, int dealer);
+    char *getPlayerName(int playerIndex);
+    int getPlayerScore(int playerIndex);
     void setPlayerName(int playerIndex, const char *name);
     void setPlayerBid(int playerIndex, int bid);
     void updatePlayerScore(int playerIndex, int tricks);

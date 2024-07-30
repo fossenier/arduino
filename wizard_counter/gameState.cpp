@@ -37,10 +37,12 @@ void GameState::updatePlayerScore(int playerIndex, int tricks)
 {
     if (playerIndex >= 0 && playerIndex < m_playerCount)
     {
-        int bidOffset = abs(m_players[playerIndex].bid - tricks);
+        int bid = m_players[playerIndex].bid;
+        int bidOffset = (bid > tricks) ? (bid - tricks) : (tricks - bid);
+
         if (bidOffset == 0)
         {
-            m_players[playerIndex].score += 20 + m_players[playerIndex].bid * 10;
+            m_players[playerIndex].score += 20 + bid * 10;
         }
         else
         {

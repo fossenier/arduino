@@ -1,6 +1,14 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
+namespace gameState
+{
+    constexpr int minPlayers{3};
+    constexpr int maxPlayers{6};
+}
+
+using namespace gameState;
+
 class GameState
 {
 private:

@@ -15,10 +15,16 @@ namespace screen
     constexpr int enPin{9};
     constexpr int rsPin{10};
 
+    constexpr long messageDelay{3000};
+
+    constexpr char welcomeMessageTop1[]{"Welcome to the"};
+    constexpr char welcomeMessageBottom1[]{"Wizard counter!"};
+    constexpr char welcomeMessageTop2[]{"Press select to"};
+    constexpr char welcomeMessageBottom2[]{"begin."};
+    constexpr char playerCountTop[]{"# of players?"};
+
     constexpr char blank{' '};
     constexpr char zero{'0'};
-    constexpr char welcomeMessageTop[]{"Welcome to the"};
-    constexpr char welcomeMessageBottom[]{"Wizard counter!"};
     constexpr char inputErrorTop[]{"Invalid input,"};
     constexpr char inputErrorBottom[]{"please enter 1-6."};
     constexpr char gameOverMessage[]{"Game over!"};
@@ -31,6 +37,8 @@ namespace screen
 }
 
 void centerPrint(LiquidCrystal &display, const char *message, int row, int offset = 0);
+void centerPrint(LiquidCrystal &display, int number, int row, int offset = 0);
 int stringLength(const char *str);
+int numberLength(int number);
 
 #endif
